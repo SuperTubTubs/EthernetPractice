@@ -12,32 +12,28 @@
 int main(int argc, char const *argv[]) 
 { 
 	NetworkDaemon *networkDaemon = NetworkDaemon::getInstance();
-	networkDaemon->setupBroadcastSocket();
-	#ifdef SERVER_SIDE
-		networkDaemon->bindSocket();
-	#endif
-	tempData dataPacket;
+	
+	#ifdef SERVER_SOCKET
+		networkDaemon->setupServerSocket();
+	#else
+		networkDaemon->setupClientSocket();
+	#endif // SERVER_SOCKET
 
-	#ifndef SERVER_SIDE
-		networkDaemon->connectSocket();
-	#endif 
 
 	int counter = 0;
 	while (true)
 	{
-
-		if (counter == 2000) {
-			dataPacket.tempChar = 'F';
-			dataPacket.tempNumber = 32;
+		if (!(counter % 100)) {
+			//usleep(250);
+			usleep(50000);
 		}
 
-		if (counter == 4000) {
-			#ifndef SERVER_SIDE
-				networkDaemon->receiveFromSocket();
+		if (!(counter % 10000)) {
+			#ifdef SERVER_SOCKET
+				networkDaemon->sendData(counter);
 			#else
-				networkDaemon->sendToSocket(&dataPacket);
+				networkDaemon->receiveData();
 			#endif
-			counter = 0;
 		}
 		counter++;
 	}
